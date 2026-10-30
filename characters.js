@@ -289,3 +289,230 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
 
   ctx.restore();
 };
+
+// 별 모양 경로(중심 cx, cy, 바깥 반지름 r)
+Characters._starPath = function (ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (var k = 0; k < 10; k++) {
+    var rad = k % 2 === 0 ? r : r * 0.45;
+    var a = -Math.PI / 2 + k * Math.PI / 5;
+    ctx.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad);
+  }
+  ctx.closePath();
+};
+
+// 무대 위 아이돌 한 명(정면). (0, 0)이 발치 중앙이고 키는 약 120이라, 부르는 쪽이 translate/scale로 자리를 잡는다.
+// mood: 'idle'(차분한 미소) | 'happy'(눈웃음, 한 손 흔들기) | 'cheer'(두 팔 번쩍, 입 크게)
+Characters.drawIdol = function (ctx, mood) {
+  var cel = Characters._cel;
+  var OUT = Characters._OUTLINE;
+  var HAIR = '#ff9ad0';
+  var HAIR_SHADE = '#e676b4';
+  var headY = -86;
+  var i;
+  var s;
+
+  ctx.save();
+
+  // 바닥 그림자
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 30, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 뒷머리와 양 갈래 머리(응원 때는 갈래가 위로 들린다)
+  var lift = mood === 'cheer' ? -10 : mood === 'happy' ? -4 : 0;
+  for (s = -1; s <= 1; s += 2) {
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.moveTo(s * 18, headY - 8);
+      ctx.bezierCurveTo(s * 40, headY - 6 + lift, s * 46, headY + 22 + lift, s * 34, headY + 38 + lift);
+      ctx.bezierCurveTo(s * 28, headY + 26 + lift, s * 24, headY + 14, s * 20, headY + 8);
+      ctx.closePath();
+    }, HAIR, s > 0 ? HAIR_SHADE : null, 2.4);
+  }
+  cel(ctx, function () {
+    ctx.beginPath();
+    ctx.arc(0, headY, 24, 0, Math.PI * 2);
+  }, HAIR, HAIR_SHADE, 2.4);
+
+  // 다리와 부츠
+  for (s = -1; s <= 1; s += 2) {
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.rect(s * 8 - 3.5, -18, 7, 14);
+    }, Characters._SKIN, null, 2);
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.moveTo(s * 8 - 5, -9);
+      ctx.lineTo(s * 8 + 5, -9);
+      ctx.lineTo(s * 8 + 6.5, 0);
+      ctx.lineTo(s * 8 - 6.5, 0);
+      ctx.closePath();
+    }, '#ff5fb8', null, 2);
+  }
+
+  // 무대 치마
+  cel(ctx, function () {
+    ctx.beginPath();
+    ctx.moveTo(-12, -38);
+    ctx.quadraticCurveTo(-18, -26, -31, -15);
+    ctx.quadraticCurveTo(0, -7, 31, -15);
+    ctx.quadraticCurveTo(18, -26, 12, -38);
+    ctx.closePath();
+  }, '#ffffff', '#e4d6f6', 2.4);
+  ctx.strokeStyle = '#ff7cc4';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-29, -16.5);
+  ctx.quadraticCurveTo(0, -9, 29, -16.5);
+  ctx.stroke();
+
+  // 상의와 별 문양
+  cel(ctx, function () {
+    ctx.beginPath();
+    ctx.moveTo(-12, -38);
+    ctx.quadraticCurveTo(-11, -48, -16, -64);
+    ctx.quadraticCurveTo(0, -70, 16, -64);
+    ctx.quadraticCurveTo(11, -48, 12, -38);
+    ctx.closePath();
+  }, '#ff6fb8', '#e24fa0', 2.4);
+  Characters._starPath(ctx, 0, -52, 6);
+  ctx.fillStyle = '#ffe27a';
+  ctx.fill();
+  ctx.strokeStyle = OUT;
+  ctx.lineWidth = 1.4;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // 팔: idle은 몸 옆, happy는 한 손 흔들기, cheer는 두 팔 번쩍
+  var shoulderY = -62;
+  var armR = { x: 27, y: -46 };
+  var armL = { x: -27, y: -46 };
+  if (mood === 'happy') {
+    armR = { x: 29, y: -90 };
+  } else if (mood === 'cheer') {
+    armR = { x: 30, y: -108 };
+    armL = { x: -30, y: -108 };
+  }
+  Characters._drawArm(ctx, -14, shoulderY, armL.x, armL.y, -1);
+  Characters._drawArm(ctx, 14, shoulderY, armR.x, armR.y, 1);
+  Characters._drawHand(ctx, armL.x, armL.y);
+  Characters._drawHand(ctx, armR.x, armR.y);
+
+  // 얼굴
+  cel(ctx, function () {
+    ctx.beginPath();
+    ctx.arc(0, headY, 21, 0, Math.PI * 2);
+  }, Characters._SKIN, null, 2.4);
+
+  // 앞머리와 옆머리
+  cel(ctx, function () {
+    ctx.beginPath();
+    ctx.arc(0, headY - 2, 23, Math.PI, Math.PI * 2);
+    ctx.lineTo(22, headY - 6);
+    ctx.lineTo(19, headY + 8);
+    ctx.lineTo(16, headY - 8);
+    ctx.lineTo(10, headY - 4);
+    ctx.lineTo(4, headY - 12);
+    ctx.lineTo(-2, headY - 4);
+    ctx.lineTo(-9, headY - 11);
+    ctx.lineTo(-14, headY - 5);
+    ctx.lineTo(-19, headY + 8);
+    ctx.lineTo(-22, headY - 6);
+    ctx.closePath();
+  }, HAIR, HAIR_SHADE, 2.4);
+
+  // 볼 홍조
+  ctx.fillStyle = 'rgba(255, 120, 150, 0.55)';
+  for (s = -1; s <= 1; s += 2) {
+    ctx.beginPath();
+    ctx.ellipse(s * 13, headY + 8, 4.5, 2.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  if (mood === 'happy') {
+    // 눈웃음 ^ ^ 과 크게 벌린 웃는 입
+    ctx.strokeStyle = OUT;
+    ctx.lineWidth = 2.8;
+    for (s = -1; s <= 1; s += 2) {
+      ctx.beginPath();
+      ctx.arc(s * 9, headY + 3, 4.6, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+    }
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.moveTo(-6, headY + 9);
+      ctx.quadraticCurveTo(0, headY + 21, 6, headY + 9);
+      ctx.closePath();
+    }, '#ff6f8f', null, 2);
+  } else if (mood === 'cheer') {
+    // 반짝이는 큰 눈, 치켜 올린 눈썹, 활짝 벌린 입
+    ctx.strokeStyle = OUT;
+    ctx.lineWidth = 2.4;
+    for (s = -1; s <= 1; s += 2) {
+      ctx.beginPath();
+      ctx.moveTo(s * 5, headY - 7);
+      ctx.lineTo(s * 13, headY - 9);
+      ctx.stroke();
+      cel(ctx, function () {
+        ctx.beginPath();
+        ctx.ellipse(s * 9, headY + 1, 4.8, 6, 0, 0, Math.PI * 2);
+      }, '#4a2c6a', null, 1.8);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(s * 9 - 1.4, headY - 1.4, 1.9, 0, Math.PI * 2);
+      ctx.arc(s * 9 + 1.5, headY + 2.6, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.ellipse(0, headY + 12, 6.5, 6, 0, 0, Math.PI * 2);
+    }, '#c9356a', null, 2);
+    ctx.fillStyle = '#ff8fa8';
+    ctx.beginPath();
+    ctx.ellipse(0, headY + 15, 4, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // 머리 주변 반짝이
+    var sparks = [[-34, headY - 26, 5], [36, headY - 22, 6], [0, headY - 38, 4.5]];
+    for (i = 0; i < sparks.length; i++) {
+      Characters._starPath(ctx, sparks[i][0], sparks[i][1], sparks[i][2]);
+      ctx.fillStyle = '#ffe27a';
+      ctx.fill();
+      ctx.strokeStyle = OUT;
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+  } else {
+    // idle: 또렷한 눈과 작은 미소
+    for (s = -1; s <= 1; s += 2) {
+      cel(ctx, function () {
+        ctx.beginPath();
+        ctx.ellipse(s * 9, headY + 2, 3.6, 4.6, 0, 0, Math.PI * 2);
+      }, '#4a2c6a', null, 1.8);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(s * 9 - 1.1, headY, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = OUT;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-5, headY + 12);
+    ctx.quadraticCurveTo(0, headY + 17, 5, headY + 12);
+    ctx.stroke();
+  }
+
+  // 머리핀 별
+  Characters._starPath(ctx, -17, headY - 17, 6);
+  ctx.fillStyle = '#ffe27a';
+  ctx.fill();
+  ctx.strokeStyle = OUT;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+
+  ctx.restore();
+};
