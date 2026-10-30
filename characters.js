@@ -44,7 +44,9 @@ Characters._cel = function (ctx, pathFn, color, shade, lineWidth) {
 };
 
 // 팔 한쪽: 어깨 → 팔꿈치 → 손목. 팔꿈치는 몸 바깥·아래쪽으로 꺾는다.
-Characters._drawArm = function (ctx, sx, sy, hx, hy, side) {
+Characters._drawArm = function (ctx, sx, sy, hx, hy, side, sleeve, sleeveHi) {
+  sleeve = sleeve || '#ff8ac8';
+  sleeveHi = sleeveHi || '#ffc2e4';
   var dx = hx - sx;
   var dy = hy - sy;
   var d = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -77,8 +79,8 @@ Characters._drawArm = function (ctx, sx, sy, hx, hy, side) {
 
   // 짧은 퍼프 소매
   line(sx, sy, sleeveX, sleeveY, undefined, undefined, Characters._OUTLINE, 12);
-  line(sx, sy, sleeveX, sleeveY, undefined, undefined, '#ff8ac8', 8);
-  line(sx - side * 1.6, sy - 1.6, sleeveX - side * 1.6, sleeveY - 1.6, undefined, undefined, '#ffc2e4', 2);
+  line(sx, sy, sleeveX, sleeveY, undefined, undefined, sleeve, 8);
+  line(sx - side * 1.6, sy - 1.6, sleeveX - side * 1.6, sleeveY - 1.6, undefined, undefined, sleeveHi, 2);
 };
 
 // 손(응원봉을 쥔 주먹). 머리카락 앞에 그려야 해서 팔과 따로 그린다.
@@ -306,8 +308,10 @@ Characters._starPath = function (ctx, cx, cy, r) {
 Characters.drawIdol = function (ctx, mood) {
   var cel = Characters._cel;
   var OUT = Characters._OUTLINE;
-  var HAIR = '#ff9ad0';
-  var HAIR_SHADE = '#e676b4';
+  var HAIR = '#6ec6ff';
+  var HAIR_SHADE = '#4aa3e0';
+  var JACKET = '#4f7df0';
+  var JACKET_SHADE = '#3a62cc';
   var headY = -86;
   var i;
   var s;
@@ -320,127 +324,137 @@ Characters.drawIdol = function (ctx, mood) {
   ctx.ellipse(0, 2, 30, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 뒷머리와 양 갈래 머리(응원 때는 갈래가 위로 들린다)
-  var lift = mood === 'cheer' ? -10 : mood === 'happy' ? -4 : 0;
+  // 바지와 부츠
   for (s = -1; s <= 1; s += 2) {
     cel(ctx, function () {
       ctx.beginPath();
-      ctx.moveTo(s * 18, headY - 8);
-      ctx.bezierCurveTo(s * 40, headY - 6 + lift, s * 46, headY + 22 + lift, s * 34, headY + 38 + lift);
-      ctx.bezierCurveTo(s * 28, headY + 26 + lift, s * 24, headY + 14, s * 20, headY + 8);
+      ctx.moveTo(s * 1, -40);
+      ctx.lineTo(s * 13, -40);
+      ctx.lineTo(s * 12, -8);
+      ctx.lineTo(s * 2, -8);
       ctx.closePath();
-    }, HAIR, s > 0 ? HAIR_SHADE : null, 2.4);
-  }
-  cel(ctx, function () {
-    ctx.beginPath();
-    ctx.arc(0, headY, 24, 0, Math.PI * 2);
-  }, HAIR, HAIR_SHADE, 2.4);
-
-  // 다리와 부츠
-  for (s = -1; s <= 1; s += 2) {
+    }, '#f4f0ff', '#d9d0f0', 2.2);
     cel(ctx, function () {
       ctx.beginPath();
-      ctx.rect(s * 8 - 3.5, -18, 7, 14);
-    }, Characters._SKIN, null, 2);
-    cel(ctx, function () {
-      ctx.beginPath();
-      ctx.moveTo(s * 8 - 5, -9);
-      ctx.lineTo(s * 8 + 5, -9);
-      ctx.lineTo(s * 8 + 6.5, 0);
-      ctx.lineTo(s * 8 - 6.5, 0);
+      ctx.moveTo(s * 1.5, -9);
+      ctx.lineTo(s * 12.5, -9);
+      ctx.lineTo(s * 15, 0);
+      ctx.lineTo(s * 0.5, 0);
       ctx.closePath();
-    }, '#ff5fb8', null, 2);
+    }, '#2b2b5a', null, 2.2);
   }
 
-  // 무대 치마
+  // 재킷(어깨는 넓게, 허리는 좁게)
   cel(ctx, function () {
     ctx.beginPath();
     ctx.moveTo(-12, -38);
-    ctx.quadraticCurveTo(-18, -26, -31, -15);
-    ctx.quadraticCurveTo(0, -7, 31, -15);
-    ctx.quadraticCurveTo(18, -26, 12, -38);
+    ctx.quadraticCurveTo(-12, -50, -17, -64);
+    ctx.quadraticCurveTo(0, -71, 17, -64);
+    ctx.quadraticCurveTo(12, -50, 12, -38);
     ctx.closePath();
-  }, '#ffffff', '#e4d6f6', 2.4);
-  ctx.strokeStyle = '#ff7cc4';
-  ctx.lineWidth = 3;
+  }, JACKET, JACKET_SHADE, 2.4);
+  // 재킷 앞 트임과 금색 벨트
+  ctx.strokeStyle = OUT;
+  ctx.lineWidth = 1.6;
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(-29, -16.5);
-  ctx.quadraticCurveTo(0, -9, 29, -16.5);
+  ctx.moveTo(0, -67);
+  ctx.lineTo(0, -39);
   ctx.stroke();
-
-  // 상의와 별 문양
   cel(ctx, function () {
     ctx.beginPath();
-    ctx.moveTo(-12, -38);
-    ctx.quadraticCurveTo(-11, -48, -16, -64);
-    ctx.quadraticCurveTo(0, -70, 16, -64);
-    ctx.quadraticCurveTo(11, -48, 12, -38);
-    ctx.closePath();
-  }, '#ff6fb8', '#e24fa0', 2.4);
-  Characters._starPath(ctx, 0, -52, 6);
+    ctx.rect(-12.5, -42, 25, 4.5);
+  }, '#ffe27a', null, 1.8);
+  Characters._starPath(ctx, 6, -54, 5.5);
   ctx.fillStyle = '#ffe27a';
   ctx.fill();
-  ctx.strokeStyle = OUT;
   ctx.lineWidth = 1.4;
   ctx.lineJoin = 'round';
   ctx.stroke();
 
   // 팔: idle은 몸 옆, happy는 한 손 흔들기, cheer는 두 팔 번쩍
   var shoulderY = -62;
-  var armR = { x: 27, y: -46 };
-  var armL = { x: -27, y: -46 };
+  var armR = { x: 29, y: -46 };
+  var armL = { x: -29, y: -46 };
   if (mood === 'happy') {
-    armR = { x: 29, y: -90 };
+    armR = { x: 31, y: -90 };
   } else if (mood === 'cheer') {
-    armR = { x: 30, y: -108 };
-    armL = { x: -30, y: -108 };
+    armR = { x: 32, y: -108 };
+    armL = { x: -32, y: -108 };
   }
-  Characters._drawArm(ctx, -14, shoulderY, armL.x, armL.y, -1);
-  Characters._drawArm(ctx, 14, shoulderY, armR.x, armR.y, 1);
+  Characters._drawArm(ctx, -15, shoulderY, armL.x, armL.y, -1, JACKET, '#8fb0ff');
+  Characters._drawArm(ctx, 15, shoulderY, armR.x, armR.y, 1, JACKET, '#8fb0ff');
   Characters._drawHand(ctx, armL.x, armL.y);
   Characters._drawHand(ctx, armR.x, armR.y);
 
-  // 얼굴
+  // 귀와 얼굴
+  for (s = -1; s <= 1; s += 2) {
+    cel(ctx, function () {
+      ctx.beginPath();
+      ctx.arc(s * 21, headY + 2, 4, 0, Math.PI * 2);
+    }, Characters._SKIN, null, 2);
+  }
   cel(ctx, function () {
     ctx.beginPath();
     ctx.arc(0, headY, 21, 0, Math.PI * 2);
   }, Characters._SKIN, null, 2.4);
 
-  // 앞머리와 옆머리
+  // 짧고 뾰족한 머리와 앞머리
   cel(ctx, function () {
     ctx.beginPath();
-    ctx.arc(0, headY - 2, 23, Math.PI, Math.PI * 2);
-    ctx.lineTo(22, headY - 6);
-    ctx.lineTo(19, headY + 8);
-    ctx.lineTo(16, headY - 8);
-    ctx.lineTo(10, headY - 4);
-    ctx.lineTo(4, headY - 12);
-    ctx.lineTo(-2, headY - 4);
-    ctx.lineTo(-9, headY - 11);
-    ctx.lineTo(-14, headY - 5);
-    ctx.lineTo(-19, headY + 8);
-    ctx.lineTo(-22, headY - 6);
+    ctx.moveTo(-22, headY + 6);
+    ctx.lineTo(-23, headY - 12);
+    ctx.lineTo(-17, headY - 26);
+    ctx.lineTo(-12, headY - 21);
+    ctx.lineTo(-6, headY - 31);
+    ctx.lineTo(0, headY - 23);
+    ctx.lineTo(7, headY - 32);
+    ctx.lineTo(12, headY - 22);
+    ctx.lineTo(19, headY - 27);
+    ctx.lineTo(23, headY - 12);
+    ctx.lineTo(22, headY + 6);
+    ctx.lineTo(18, headY - 7);
+    ctx.lineTo(12, headY - 12);
+    ctx.lineTo(6, headY - 7);
+    ctx.lineTo(0, headY - 14);
+    ctx.lineTo(-7, headY - 8);
+    ctx.lineTo(-13, headY - 13);
+    ctx.lineTo(-18, headY - 6);
     ctx.closePath();
   }, HAIR, HAIR_SHADE, 2.4);
 
-  // 볼 홍조
-  ctx.fillStyle = 'rgba(255, 120, 150, 0.55)';
+  // 금색 별 귀걸이
+  Characters._starPath(ctx, -22, headY + 11, 4);
+  ctx.fillStyle = '#ffe27a';
+  ctx.fill();
+  ctx.strokeStyle = OUT;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  // 옅은 볼 홍조
+  ctx.fillStyle = 'rgba(255, 130, 150, 0.4)';
   for (s = -1; s <= 1; s += 2) {
     ctx.beginPath();
-    ctx.ellipse(s * 13, headY + 8, 4.5, 2.8, 0, 0, Math.PI * 2);
+    ctx.ellipse(s * 13, headY + 9, 4, 2.4, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  ctx.strokeStyle = OUT;
   if (mood === 'happy') {
-    // 눈웃음 ^ ^ 과 크게 벌린 웃는 입
-    ctx.strokeStyle = OUT;
+    // 눈웃음 ^ ^ 과 크게 웃는 입, 올라간 눈썹
     ctx.lineWidth = 2.8;
     for (s = -1; s <= 1; s += 2) {
       ctx.beginPath();
       ctx.arc(s * 9, headY + 3, 4.6, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+    }
+    ctx.lineWidth = 2.6;
+    for (s = -1; s <= 1; s += 2) {
+      ctx.beginPath();
+      ctx.moveTo(s * 5, headY - 9);
+      ctx.lineTo(s * 13, headY - 11);
       ctx.stroke();
     }
     cel(ctx, function () {
@@ -451,17 +465,16 @@ Characters.drawIdol = function (ctx, mood) {
     }, '#ff6f8f', null, 2);
   } else if (mood === 'cheer') {
     // 반짝이는 큰 눈, 치켜 올린 눈썹, 활짝 벌린 입
-    ctx.strokeStyle = OUT;
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = 2.8;
     for (s = -1; s <= 1; s += 2) {
       ctx.beginPath();
-      ctx.moveTo(s * 5, headY - 7);
-      ctx.lineTo(s * 13, headY - 9);
+      ctx.moveTo(s * 4, headY - 7);
+      ctx.lineTo(s * 14, headY - 10);
       ctx.stroke();
       cel(ctx, function () {
         ctx.beginPath();
-        ctx.ellipse(s * 9, headY + 1, 4.8, 6, 0, 0, Math.PI * 2);
-      }, '#4a2c6a', null, 1.8);
+        ctx.ellipse(s * 9, headY + 1, 4.6, 5.8, 0, 0, Math.PI * 2);
+      }, '#2c3a7a', null, 1.8);
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(s * 9 - 1.4, headY - 1.4, 1.9, 0, Math.PI * 2);
@@ -477,7 +490,7 @@ Characters.drawIdol = function (ctx, mood) {
     ctx.ellipse(0, headY + 15, 4, 2.4, 0, 0, Math.PI * 2);
     ctx.fill();
     // 머리 주변 반짝이
-    var sparks = [[-34, headY - 26, 5], [36, headY - 22, 6], [0, headY - 38, 4.5]];
+    var sparks = [[-36, headY - 24, 5], [38, headY - 20, 6], [0, headY - 42, 4.5]];
     for (i = 0; i < sparks.length; i++) {
       Characters._starPath(ctx, sparks[i][0], sparks[i][1], sparks[i][2]);
       ctx.fillStyle = '#ffe27a';
@@ -487,32 +500,31 @@ Characters.drawIdol = function (ctx, mood) {
       ctx.stroke();
     }
   } else {
-    // idle: 또렷한 눈과 작은 미소
+    // idle: 또렷한 눈, 곧은 눈썹, 한쪽이 올라간 미소
     for (s = -1; s <= 1; s += 2) {
       cel(ctx, function () {
         ctx.beginPath();
-        ctx.ellipse(s * 9, headY + 2, 3.6, 4.6, 0, 0, Math.PI * 2);
-      }, '#4a2c6a', null, 1.8);
+        ctx.ellipse(s * 9, headY + 2, 3.4, 4.4, 0, 0, Math.PI * 2);
+      }, '#2c3a7a', null, 1.8);
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(s * 9 - 1.1, headY, 1.5, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.strokeStyle = OUT;
+    ctx.lineWidth = 2.6;
+    for (s = -1; s <= 1; s += 2) {
+      ctx.beginPath();
+      ctx.moveTo(s * 5, headY - 6);
+      ctx.lineTo(s * 13, headY - 7);
+      ctx.stroke();
+    }
     ctx.lineWidth = 2.4;
     ctx.beginPath();
-    ctx.moveTo(-5, headY + 12);
-    ctx.quadraticCurveTo(0, headY + 17, 5, headY + 12);
+    ctx.moveTo(-5, headY + 13);
+    ctx.quadraticCurveTo(0, headY + 15, 6, headY + 11);
     ctx.stroke();
   }
-
-  // 머리핀 별
-  Characters._starPath(ctx, -17, headY - 17, 6);
-  ctx.fillStyle = '#ffe27a';
-  ctx.fill();
-  ctx.strokeStyle = OUT;
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
 
   ctx.restore();
 };
