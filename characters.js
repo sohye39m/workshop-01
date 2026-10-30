@@ -16,7 +16,7 @@ Characters._fanPoses = {
 Characters._drawArm = function (ctx, sx, sy, hx, hy, side) {
   var cx = (sx + hx) / 2 + side * 7;
   var cy = (sy + hy) / 2 + 5;
-  var passes = [['#262a4d', 9], ['#3d4380', 7], ['#5a62a8', 2.5]];
+  var passes = [['#c0609a', 6.5], ['#f08cc4', 5], ['#ffd0ea', 1.8]];
   ctx.lineCap = 'round';
   for (var i = 0; i < passes.length; i++) {
     ctx.strokeStyle = passes[i][0];
@@ -101,6 +101,7 @@ Characters._drawLightstick = function (ctx, hx, hy, angle, g) {
 Characters.drawFan = function (ctx, x, y, pose, glow) {
   var p = Characters._fanPoses[pose] || Characters._fanPoses.idle;
   var g = typeof glow === 'number' ? glow : 1;
+  var i;
 
   ctx.save();
   ctx.translate(x, y);
@@ -114,94 +115,158 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.ellipse(0, 2, 26, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 몸통: 가장자리에 림라이트가 들어가는 가로 그라데이션
-  var body = ctx.createLinearGradient(-19, 0, 19, 0);
-  body.addColorStop(0, '#5a62a8');
-  body.addColorStop(0.18, '#3a3f78');
-  body.addColorStop(0.8, '#2a2e58');
-  body.addColorStop(1, '#4b52a0');
-  ctx.fillStyle = body;
+  // 다리와 신발
+  for (i = -1; i <= 1; i += 2) {
+    var leg = ctx.createLinearGradient(i * 5 - 3, 0, i * 5 + 3, 0);
+    leg.addColorStop(0, '#f0c4a4');
+    leg.addColorStop(0.5, '#ffe0c8');
+    leg.addColorStop(1, '#d9a07c');
+    ctx.fillStyle = leg;
+    ctx.fillRect(i * 5 - 2.5, -12, 5, 11);
+    ctx.fillStyle = '#e8e8f4';
+    ctx.beginPath();
+    ctx.ellipse(i * 5, -1, 4.5, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff7cc4';
+    ctx.fillRect(i * 5 - 3.5, -4.5, 7, 1.6);
+  }
+
+  // 치마: 허리에서 퍼지는 A라인. 주름마다 명암이 다르다.
+  var skirt = ctx.createLinearGradient(-22, 0, 22, 0);
+  skirt.addColorStop(0, '#8a5fc4');
+  skirt.addColorStop(0.2, '#6a43a8');
+  skirt.addColorStop(0.5, '#5a3a98');
+  skirt.addColorStop(0.8, '#6a43a8');
+  skirt.addColorStop(1, '#8a5fc4');
+  ctx.fillStyle = skirt;
   ctx.beginPath();
-  ctx.moveTo(-19, 0);
-  ctx.quadraticCurveTo(-18, -26, -15, -42);
-  ctx.quadraticCurveTo(0, -52, 15, -42);
-  ctx.quadraticCurveTo(18, -26, 19, 0);
+  ctx.moveTo(-9, -29);
+  ctx.quadraticCurveTo(-14, -18, -23, -9);
+  ctx.quadraticCurveTo(0, -4, 23, -9);
+  ctx.quadraticCurveTo(14, -18, 9, -29);
   ctx.closePath();
   ctx.fill();
-
-  // 등 가운데 접힌 주름(후드 느낌)과 아래쪽으로 어두워지는 명암
-  ctx.strokeStyle = 'rgba(15, 15, 40, 0.35)';
+  ctx.strokeStyle = 'rgba(25, 10, 60, 0.35)';
+  ctx.lineWidth = 1.2;
+  for (i = -3; i <= 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 2.6, -28);
+    ctx.quadraticCurveTo(i * 4.5, -18, i * 7.2, -7);
+    ctx.stroke();
+  }
+  // 치마 끝단 흰 선
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(0, -44);
-  ctx.quadraticCurveTo(2, -24, 0, -2);
+  ctx.moveTo(-23, -9);
+  ctx.quadraticCurveTo(0, -4, 23, -9);
   ctx.stroke();
-  var fade = ctx.createLinearGradient(0, -50, 0, 0);
-  fade.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
-  fade.addColorStop(1, 'rgba(0, 0, 0, 0.28)');
-  ctx.fillStyle = fade;
+
+  // 상의: 좁은 어깨, 잘록한 허리. 가장자리에 림라이트.
+  var top = ctx.createLinearGradient(-13, 0, 13, 0);
+  top.addColorStop(0, '#ffc6e6');
+  top.addColorStop(0.2, '#f08cc4');
+  top.addColorStop(0.8, '#e070b0');
+  top.addColorStop(1, '#ffc0e2');
+  ctx.fillStyle = top;
   ctx.beginPath();
-  ctx.moveTo(-19, 0);
-  ctx.quadraticCurveTo(-18, -26, -15, -42);
-  ctx.quadraticCurveTo(0, -52, 15, -42);
-  ctx.quadraticCurveTo(18, -26, 19, 0);
+  ctx.moveTo(-9, -28);
+  ctx.quadraticCurveTo(-8, -36, -13, -43);
+  ctx.quadraticCurveTo(0, -50, 13, -43);
+  ctx.quadraticCurveTo(8, -36, 9, -28);
   ctx.closePath();
   ctx.fill();
+  var shade = ctx.createLinearGradient(0, -50, 0, -26);
+  shade.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
+  shade.addColorStop(1, 'rgba(60, 0, 40, 0.25)');
+  ctx.fillStyle = shade;
+  ctx.fill();
 
-  // 목
-  ctx.fillStyle = '#c98f6c';
-  ctx.fillRect(-4, -52, 8, 6);
+  // 허리 리본 벨트
+  ctx.fillStyle = '#fff2fa';
+  ctx.fillRect(-9.5, -30, 19, 3);
+  ctx.beginPath();
+  ctx.moveTo(0, -28.5);
+  ctx.lineTo(-6, -33);
+  ctx.lineTo(-6, -24);
+  ctx.closePath();
+  ctx.moveTo(0, -28.5);
+  ctx.lineTo(6, -33);
+  ctx.lineTo(6, -24);
+  ctx.closePath();
+  ctx.fillStyle = '#ffd0ea';
+  ctx.fill();
 
-  // 머리: 뒷머리가 보이는 구. 왼쪽 위에서 빛이 오는 명암
-  var hair = ctx.createRadialGradient(-4, -66, 1, 0, -62, 14);
-  hair.addColorStop(0, '#5a4778');
-  hair.addColorStop(0.55, '#2f2444');
-  hair.addColorStop(1, '#17101f');
+  // 머리: 구 모양 + 허리까지 내려오는 긴 머리
+  var hairShape = function () {
+    ctx.beginPath();
+    ctx.arc(0, -62, 12.5, Math.PI, Math.PI * 2);
+    ctx.bezierCurveTo(15, -52, 15, -40, 12, -31);
+    ctx.quadraticCurveTo(6, -26, 0, -30);
+    ctx.quadraticCurveTo(-6, -26, -12, -31);
+    ctx.bezierCurveTo(-15, -40, -15, -52, -12.5, -62);
+    ctx.closePath();
+  };
+  var hair = ctx.createLinearGradient(-14, -70, 14, -30);
+  hair.addColorStop(0, '#7a5a9e');
+  hair.addColorStop(0.35, '#3e2a5c');
+  hair.addColorStop(1, '#241636');
   ctx.fillStyle = hair;
-  ctx.beginPath();
-  ctx.arc(0, -62, 12, 0, Math.PI * 2);
+  hairShape();
+  ctx.fill();
+  var hairShade = ctx.createRadialGradient(-5, -68, 1, 0, -62, 16);
+  hairShade.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
+  hairShade.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+  ctx.fillStyle = hairShade;
+  hairShape();
   ctx.fill();
 
-  // 귀
-  ctx.fillStyle = '#e8b896';
-  ctx.beginPath();
-  ctx.ellipse(-12, -60, 2, 3.2, 0, 0, Math.PI * 2);
-  ctx.ellipse(12, -60, 2, 3.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 머리카락 윤기
-  ctx.strokeStyle = 'rgba(210, 190, 255, 0.55)';
-  ctx.lineWidth = 2;
+  // 머리결(세로 결)과 윤기
   ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(20, 8, 40, 0.35)';
+  ctx.lineWidth = 1;
+  for (i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 4, -56);
+    ctx.quadraticCurveTo(i * 5.5, -44, i * 4.2, -32);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(225, 205, 255, 0.6)';
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(0, -62, 9, Math.PI * 1.15, Math.PI * 1.6);
+  ctx.arc(0, -62, 9.5, Math.PI * 1.12, Math.PI * 1.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-7, -50);
+  ctx.quadraticCurveTo(-9, -42, -8, -36);
   ctx.stroke();
 
-  // 리본 머리끈
-  ctx.fillStyle = '#ff5fb8';
+  // 큰 리본 머리핀(머리 한쪽에)
+  var ribbon = ctx.createLinearGradient(0, -78, 0, -68);
+  ribbon.addColorStop(0, '#ff9ad6');
+  ribbon.addColorStop(1, '#ff4fa8');
+  ctx.fillStyle = ribbon;
   ctx.beginPath();
-  ctx.moveTo(0, -73);
-  ctx.lineTo(-6, -77);
-  ctx.lineTo(-6, -69);
-  ctx.closePath();
-  ctx.moveTo(0, -73);
-  ctx.lineTo(6, -77);
-  ctx.lineTo(6, -69);
-  ctx.closePath();
+  ctx.moveTo(6, -72);
+  ctx.quadraticCurveTo(0, -81, -2, -73);
+  ctx.quadraticCurveTo(0, -66, 6, -72);
+  ctx.moveTo(6, -72);
+  ctx.quadraticCurveTo(12, -81, 14, -73);
+  ctx.quadraticCurveTo(12, -66, 6, -72);
   ctx.fill();
-  ctx.fillStyle = '#ffd3ee';
+  ctx.fillStyle = '#ffe3f4';
   ctx.beginPath();
-  ctx.arc(0, -73, 2, 0, Math.PI * 2);
+  ctx.arc(6, -72, 2.3, 0, Math.PI * 2);
   ctx.fill();
 
   // 팔과 응원봉. 몸 뒤쪽 팔 → 몸 앞쪽 팔 순서로 겹친다.
-  var shoulderY = -42;
+  var shoulderY = -43;
   var handX = p.hx;
   var handY = shoulderY + p.hy;
   if (pose === 'cheer') {
-    Characters._drawArm(ctx, -12, shoulderY, -p.hx, handY, -1);
+    Characters._drawArm(ctx, -10, shoulderY, -p.hx, handY, -1);
   }
-  Characters._drawArm(ctx, 12, shoulderY, handX, handY, 1);
+  Characters._drawArm(ctx, 10, shoulderY, handX, handY, 1);
   Characters._drawLightstick(ctx, handX, handY, p.angle, g);
 
   ctx.restore();
