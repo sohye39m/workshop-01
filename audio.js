@@ -87,6 +87,52 @@ var GameAudio = (function () {
     98.0, 98.0, 98.0, 123.5
   ];
 
+  // 4마디(16박) 멜로디: [시작 박, 음 높이 Hz, 길이(박)]
+  // 베이스 코드 진행(C - Am - F - G)에 맞춘 밝은 음들
+  var MELODY = [
+    [0, 659.3, 0.5], [0.5, 784.0, 0.5], [1, 659.3, 0.5], [1.5, 523.3, 0.5],
+    [2, 784.0, 1], [3, 659.3, 1],
+    [4, 523.3, 0.5], [4.5, 659.3, 0.5], [5, 880.0, 0.5], [5.5, 659.3, 0.5],
+    [6, 523.3, 1], [7, 440.0, 1],
+    [8, 698.5, 0.5], [8.5, 880.0, 0.5], [9, 698.5, 0.5], [9.5, 523.3, 0.5],
+    [10, 880.0, 1], [11, 698.5, 1],
+    [12, 587.3, 0.5], [12.5, 784.0, 0.5], [13, 987.8, 0.5], [13.5, 784.0, 0.5],
+    [14, 1046.5, 1.5], [15.5, 784.0, 0.5]
+  ];
+
+  // 멜로디 한 음 (통통 튀는 사각파)
+  function scheduleLead(time, freq, length) {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.12, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + length);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(time);
+    osc.stop(time + length + 0.02);
+    songNodes.push(osc);
+  }
+
+  // 효과음용 음 하나 (songNodes에 넣지 않아 곡을 멈춰도 끊기지 않는다)
+  function playTone(type, freq, endFreq, start, length, volume) {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    var t = ctx.currentTime + start;
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (endFreq !== freq) {
+      osc.frequency.exponentialRampToValueAtTime(endFreq, t + length);
+    }
+    gain.gain.setValueAtTime(volume, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + length);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(t);
+    osc.stop(t + length + 0.02);
+  }
+
   // i번째 박의 드럼과 베이스를 예약한다
   function scheduleBeat(i, time, beatLen) {
     var inBar = i % 4;
@@ -129,6 +175,16 @@ var GameAudio = (function () {
       for (var i = 0; i < total; i++) {
         scheduleBeat(i, startTime + i * beatLen, beatLen);
       }
+      // 멜로디는 카운트인이 끝난 본 구간부터 들어온다
+      var countIn = (typeof Chart !== 'undefined' && Chart.countInBeats) || 4;
+      for (var b = countIn; b < total; b += 16) {
+        MELODY.forEach(function (note) {
+          var beat = b + note[0];
+          if (beat < total) {
+            scheduleLead(startTime + beat * beatLen, note[1], note[2] * beatLen * 0.9);
+          }
+        });
+      }
     },
 
     stopSong: function () {
@@ -139,8 +195,43 @@ var GameAudio = (function () {
       songNodes = [];
     },
 
-    // A3에서 구현
-    playHit: function (result) {},
-    playCheer: function () {}
+    // 판정 효과음: perfect는 올라가는 반짝임, good은 짧은 삑, miss는 낮게 처지는 소리
+    playHit: function (result) {
+      ensureContext();
+      if (result === 'perfect') {
+        playTone('triangle', 1318.5, 1318.5, 0, 0.12, 0.35);
+        playTone('triangle', 1760.0, 1760.0, 0.07, 0.2, 0.35);
+      } else if (result === 'good') {
+        playTone('triangle', 880.0, 880.0, 0, 0.14, 0.3);
+      } else if (result === 'miss') {
+        playTone('sawtooth', 180.0, 90.0, 0, 0.3, 0.25);
+      }
+    },
+
+    // 함성 효과음: 군중 소리 같은 노이즈가 커졌다 사라지고, 화음이 위로 올라간다
+    playCheer: function () {
+      ensureContext();
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      var filter = ctx.createBiquadFilter();
+      var gain = ctx.createGain();
+      src.buffer = getNoiseBuffer();
+      src.loop = true;
+      filter.type = 'bandpass';
+      filter.Q.value = 0.8;
+      filter.frequency.setValueAtTime(500, t);
+      filter.frequency.exponentialRampToValueAtTime(1800, t + 0.5);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.exponentialRampToValueAtTime(0.7, t + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(master);
+      src.start(t);
+      src.stop(t + 0.95);
+      playTone('square', 523.3, 1046.5, 0, 0.6, 0.12);
+      playTone('square', 659.3, 1318.5, 0, 0.6, 0.1);
+      playTone('square', 784.0, 1568.0, 0, 0.6, 0.1);
+    }
   };
 })();
