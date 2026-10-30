@@ -12,27 +12,84 @@ Characters._fanPoses = {
   droop: { hx: 18, hy: 12,  angle: 2.85 }
 };
 
-// 팔 한쪽: 어깨 → 팔꿈치 → 손. 어두운 바깥선 위에 밝은 면을 겹쳐 둥근 느낌을 낸다.
+// 팔 한쪽: 어깨 → 팔꿈치 → 손. 팔꿈치는 팔 길이로 계산해 몸 바깥·아래쪽으로 꺾는다.
+// 굵은 외곽선 위에 소매와 피부를 단순한 면으로 채우는 만화 스타일.
+Characters._OUTLINE = '#3a1f4d';
+
 Characters._drawArm = function (ctx, sx, sy, hx, hy, side) {
-  var cx = (sx + hx) / 2 + side * 7;
-  var cy = (sy + hy) / 2 + 5;
-  var passes = [['#c0609a', 6.5], ['#f08cc4', 5], ['#ffd0ea', 1.8]];
+  var dx = hx - sx;
+  var dy = hy - sy;
+  var d = Math.sqrt(dx * dx + dy * dy) || 1;
+  var L = Math.max(14, d * 0.51 + 0.5);
+  var h = Math.sqrt(Math.max(0, L * L - (d / 2) * (d / 2)));
+  var nx = -dy / d;
+  var ny = dx / d;
+  if (side * nx * 0.6 + ny * 0.8 < 0) { nx = -nx; ny = -ny; }
+  var ex = sx + dx / 2 + nx * h;
+  var ey = sy + dy / 2 + ny * h;
+  var sleeveX = sx + (ex - sx) * 0.7;
+  var sleeveY = sy + (ey - sy) * 0.7;
+
   ctx.lineCap = 'round';
-  for (var i = 0; i < passes.length; i++) {
-    ctx.strokeStyle = passes[i][0];
-    ctx.lineWidth = passes[i][1];
-    ctx.beginPath();
-    ctx.moveTo(sx + (i === 2 ? -side : 0), sy);
-    ctx.quadraticCurveTo(cx, cy, hx, hy);
-    ctx.stroke();
-  }
-  // 손
-  var hand = ctx.createRadialGradient(hx - 1, hy - 1, 0.5, hx, hy, 5);
-  hand.addColorStop(0, '#ffe3cc');
-  hand.addColorStop(1, '#d9a07c');
-  ctx.fillStyle = hand;
+  ctx.lineJoin = 'round';
+
+  // 팔 전체 외곽선
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 8;
   ctx.beginPath();
-  ctx.arc(hx, hy, 4.2, 0, Math.PI * 2);
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.lineTo(hx, hy);
+  ctx.stroke();
+
+  // 피부(윗팔 + 아랫팔)와 아랫팔 그림자 줄
+  ctx.strokeStyle = '#ffd9c0';
+  ctx.lineWidth = 5.2;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(ex, ey);
+  ctx.lineTo(hx, hy);
+  ctx.stroke();
+  ctx.strokeStyle = '#efb391';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(ex - nx * 1.6, ey - ny * 1.6);
+  ctx.lineTo(hx - nx * 1.6, hy - ny * 1.6);
+  ctx.stroke();
+
+  // 짧은 퍼프 소매: 외곽선 → 면 → 하이라이트
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 11;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(sleeveX, sleeveY);
+  ctx.stroke();
+  ctx.strokeStyle = '#f08cc4';
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(sleeveX, sleeveY);
+  ctx.stroke();
+  ctx.strokeStyle = '#ffd0ea';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(sx - side * 1.5, sy - 1.5);
+  ctx.lineTo(sleeveX - side * 1.5, sleeveY - 1.5);
+  ctx.stroke();
+};
+
+// 손(응원봉을 쥔 주먹). 머리카락 앞에 그려야 해서 팔과 따로 그린다.
+Characters._drawHand = function (ctx, hx, hy) {
+  ctx.fillStyle = '#ffd9c0';
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.arc(hx, hy, 4.6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#efb391';
+  ctx.beginPath();
+  ctx.arc(hx + 1.2, hy + 1.4, 2.2, 0, Math.PI * 2);
   ctx.fill();
 };
 
@@ -146,6 +203,10 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.quadraticCurveTo(14, -18, 9, -29);
   ctx.closePath();
   ctx.fill();
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 1.6;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
   ctx.strokeStyle = 'rgba(25, 10, 60, 0.35)';
   ctx.lineWidth = 1.2;
   for (i = -3; i <= 3; i++) {
@@ -176,6 +237,10 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.quadraticCurveTo(8, -36, 9, -28);
   ctx.closePath();
   ctx.fill();
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 1.6;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
   var shade = ctx.createLinearGradient(0, -50, 0, -26);
   shade.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
   shade.addColorStop(1, 'rgba(60, 0, 40, 0.25)');
@@ -197,6 +262,16 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.fillStyle = '#ffd0ea';
   ctx.fill();
 
+  // 팔은 긴 머리 뒤에서 나온다. 몸 뒤쪽 팔 → 앞쪽 팔 순서.
+  var shoulderY = -43;
+  var handX = p.hx;
+  var handY = shoulderY + p.hy;
+  if (pose === 'cheer') {
+    Characters._drawArm(ctx, -11, shoulderY, -p.hx, handY, -1);
+    Characters._drawHand(ctx, -p.hx, handY);
+  }
+  Characters._drawArm(ctx, 11, shoulderY, handX, handY, 1);
+
   // 머리: 구 모양 + 허리까지 내려오는 긴 머리
   var hairShape = function () {
     ctx.beginPath();
@@ -214,6 +289,10 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.fillStyle = hair;
   hairShape();
   ctx.fill();
+  ctx.strokeStyle = Characters._OUTLINE;
+  ctx.lineWidth = 1.6;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
   var hairShade = ctx.createRadialGradient(-5, -68, 1, 0, -62, 16);
   hairShade.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
   hairShade.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
@@ -259,14 +338,8 @@ Characters.drawFan = function (ctx, x, y, pose, glow) {
   ctx.arc(6, -72, 2.3, 0, Math.PI * 2);
   ctx.fill();
 
-  // 팔과 응원봉. 몸 뒤쪽 팔 → 몸 앞쪽 팔 순서로 겹친다.
-  var shoulderY = -43;
-  var handX = p.hx;
-  var handY = shoulderY + p.hy;
-  if (pose === 'cheer') {
-    Characters._drawArm(ctx, -10, shoulderY, -p.hx, handY, -1);
-  }
-  Characters._drawArm(ctx, 10, shoulderY, handX, handY, 1);
+  // 손과 응원봉은 머리카락 앞에 그린다.
+  Characters._drawHand(ctx, handX, handY);
   Characters._drawLightstick(ctx, handX, handY, p.angle, g);
 
   ctx.restore();
