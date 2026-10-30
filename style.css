@@ -1,0 +1,27 @@
+/* 담당: Builder C MinjooSong0708 */
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #14102a;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+#screen-start {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+#screen-start h1 {
+  margin: 0;
+  font-size: 40px;
+}
+
+#screen-start p {
+  margin: 0;
+  font-size: 24px;
+}
