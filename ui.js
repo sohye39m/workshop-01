@@ -35,6 +35,17 @@ var UI = (function () {
       byId('hud-combo').textContent = hud.combo;
     },
 
+    // result: { score, maxCombo, counts: { perfect, good, miss }, grade }
+    showResult: function (result) {
+      byId('result-grade').textContent = result.grade;
+      byId('result-score').textContent = result.score;
+      byId('result-maxcombo').textContent = result.maxCombo;
+      byId('result-perfect').textContent = result.counts.perfect;
+      byId('result-good').textContent = result.counts.good;
+      byId('result-miss').textContent = result.counts.miss;
+      byId('result-line').textContent = Script.resultLine(result.grade);
+    },
+
     onStart: function (handler) {
       startHandler = handler;
     },
