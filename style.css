@@ -7,7 +7,23 @@ html, body {
   font-family: sans-serif;
 }
 
-#screen-start {
+button {
+  padding: 12px 40px;
+  border: 0;
+  border-radius: 999px;
+  background: #ff5fa2;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ff7ab4;
+}
+
+/* 화면 공통: hidden 속성으로 켜고 끈다 */
+.screen {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -16,12 +32,95 @@ html, body {
   gap: 16px;
 }
 
+.screen[hidden] {
+  display: none;
+}
+
+/* 시작 화면 */
 #screen-start h1 {
   margin: 0;
   font-size: 40px;
 }
 
-#screen-start p {
+.howto {
   margin: 0;
-  font-size: 24px;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #d9d4f2;
+}
+
+/* 진행 화면 */
+.play-frame {
+  position: relative;
+  width: 800px;
+  max-width: 100%;
+}
+
+#stage-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #1d1740;
+}
+
+#hud {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  text-align: right;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#subtitle {
+  box-sizing: border-box;
+  min-height: 64px;
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  font-size: 22px;
+}
+
+/* 결과 화면 */
+#screen-result h2 {
+  margin: 0;
+  font-size: 32px;
+}
+
+#result-grade {
+  font-size: 96px;
+  font-weight: bold;
+  color: #ffd84d;
+  line-height: 1;
+}
+
+.result-list {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 24px;
+  margin: 0;
+  font-size: 20px;
+}
+
+.result-list dt {
+  color: #d9d4f2;
+  text-align: right;
+}
+
+.result-list dd {
+  margin: 0;
+  font-weight: bold;
+}
+
+#result-line {
+  margin: 0;
+  font-size: 22px;
 }

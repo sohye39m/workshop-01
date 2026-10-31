@@ -7,9 +7,42 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="screen-start">
+  <!-- 시작 화면 -->
+  <div id="screen-start" class="screen">
     <h1>K-POP 응원봉 리듬 게임</h1>
-    <p>시작</p>
+    <ul class="howto">
+      <li>스페이스바 하나로 플레이해요.</li>
+      <li>NPC 팬들과 박자를 맞춰 응원봉을 흔드세요.</li>
+      <li>팬들이 응원봉을 머리 위로 들어 올리는 준비 자세가 보이면, 2박 뒤에 스페이스바로 함성!</li>
+    </ul>
+    <button id="start-button" type="button">시작</button>
+  </div>
+
+  <!-- 진행 화면 -->
+  <div id="screen-play" class="screen" hidden>
+    <div class="play-frame">
+      <canvas id="stage-canvas" width="800" height="450"></canvas>
+      <div id="hud">
+        <div class="hud-item">점수 <span id="hud-score">0</span></div>
+        <div class="hud-item">콤보 <span id="hud-combo">0</span></div>
+      </div>
+      <div id="subtitle"></div>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="screen-result" class="screen" hidden>
+    <h2>결과</h2>
+    <div id="result-grade">-</div>
+    <dl class="result-list">
+      <dt>총점</dt><dd id="result-score">0</dd>
+      <dt>최고 콤보</dt><dd id="result-maxcombo">0</dd>
+      <dt>Perfect</dt><dd id="result-perfect">0</dd>
+      <dt>Good</dt><dd id="result-good">0</dd>
+      <dt>Miss</dt><dd id="result-miss">0</dd>
+    </dl>
+    <p id="result-line"></p>
+    <button id="retry-button" type="button">다시 하기</button>
   </div>
 
   <script src="chart.js"></script>
