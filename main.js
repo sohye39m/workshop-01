@@ -23,3 +23,35 @@ Rhythm.on('cueStart', function () {
     Stage.setPose(who, 'ready');
   });
 });
+
+// judge → 효과음, 플레이어 포즈, 판정 글자, 점수·콤보
+Rhythm.on('judge', function (e) {
+  GameAudio.playHit(e.result);
+  if (e.result === 'miss') {
+    Stage.setPose('player', 'droop');
+  } else {
+    Stage.setPose('player', e.kind === 'cheer' ? 'cheer' : 'swing');
+  }
+  Stage.showJudge(e.result);
+  UI.updateHud({ score: e.score, combo: e.combo });
+});
+
+// end → 결과 화면
+Rhythm.on('end', function (e) {
+  UI.showResult(e);
+  UI.showScreen('result');
+});
+
+// 시작·다시 하기 → 처음부터 한 판. 오디오는 이 버튼 입력 직후에 깨운다.
+function startGame() {
+  GameAudio.unlock();
+  Stage.reset();
+  UI.updateHud({ score: 0, combo: 0 });
+  UI.setSubtitle('');
+  UI.showScreen('play');
+  Rhythm.start();
+}
+
+Stage.init(document.getElementById('stage-canvas'));
+UI.onStart(startGame);
+UI.onRetry(startGame);
